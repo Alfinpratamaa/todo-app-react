@@ -77,7 +77,7 @@ export interface ChecklistItem {
 }
 
 interface ChecklistItemRequest {
-  name: string;
+  itemName: string;
 }
 
 export const getChecklistItems = (checklistId: string) =>

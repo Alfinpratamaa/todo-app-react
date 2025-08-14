@@ -39,7 +39,11 @@ export default function ChecklistDetailPage() {
 
   const handleCreateItem = async () => {
     try {
-      await createChecklistItem(checklistId!, { name: newItemName });
+      const res = await createChecklistItem(checklistId!, {
+        itemName: newItemName,
+      });
+      console.log("New item created:", res);
+
       mutate();
       setNewItemName("");
       toast.success("Item berhasil ditambahkan!");
