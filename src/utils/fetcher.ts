@@ -12,7 +12,6 @@ export const apiFetch = async <T = unknown>(
 ): Promise<T | null> => {
   const { token } = useAuthStore.getState();
 
-  // Gunakan tipe Record<string, string> supaya bisa diindex
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(options.headers as Record<string, string>),

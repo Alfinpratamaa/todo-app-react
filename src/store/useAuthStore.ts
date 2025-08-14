@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-// Definisikan tipe untuk state dan actions
 interface AuthState {
   token: string | null;
   isLoggedIn: boolean;

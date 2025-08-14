@@ -1,6 +1,5 @@
 import { apiFetch } from "../utils/fetcher";
 
-// ================= Auth =================
 interface LoginCredentials {
   username: string;
   password: string;
@@ -32,19 +31,16 @@ export const registerUser = (data: RegisterData) =>
     body: JSON.stringify(data),
   });
 
-// ================= Checklist =================
 export interface ChecklistItem {
   id: string;
   name: string;
-  itemCompletionStatus: boolean; // misal status selesai / belum
+  itemCompletionStatus: boolean;
 }
-
-// Checklist utama
 export interface Checklist {
   id: string;
   name: string;
-  checklistCompletionStatus: boolean; // status keseluruhan checklist
-  items: ChecklistItem[] | null; // bisa null kalau belum ada item
+  checklistCompletionStatus: boolean;
+  items: ChecklistItem[] | null;
 }
 
 interface ChecklistRequest {
@@ -69,7 +65,6 @@ export const createChecklist = (data: ChecklistRequest) =>
 export const deleteChecklist = (id: string) =>
   apiFetch<void>(`/checklist/${id}`, { method: "DELETE" });
 
-// ================= Checklist Items =================
 export interface ChecklistItem {
   id: string;
   name: string;
