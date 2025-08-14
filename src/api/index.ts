@@ -7,8 +7,9 @@ interface LoginCredentials {
 }
 
 export interface AuthResponse {
-  token?: string;
-  data?: any;
+  data?: {
+    token: string;
+  };
   statusCode?: number;
   message?: string;
 }
@@ -32,17 +33,32 @@ export const registerUser = (data: RegisterData) =>
   });
 
 // ================= Checklist =================
+export interface ChecklistItem {
+  id: string;
+  name: string;
+  itemCompletionStatus: boolean; // misal status selesai / belum
+}
+
+// Checklist utama
 export interface Checklist {
   id: string;
   name: string;
-  createdAt: string;
+  checklistCompletionStatus: boolean; // status keseluruhan checklist
+  items: ChecklistItem[] | null; // bisa null kalau belum ada item
 }
 
 interface ChecklistRequest {
   name: string;
 }
 
-export const getChecklists = () => apiFetch<Checklist[]>("/checklist");
+export interface ApiResponse<T> {
+  statusCode: number;
+  message: string;
+  data: T;
+}
+
+export const getChecklists = () =>
+  apiFetch<ApiResponse<Checklist[]>>("/checklist");
 
 export const createChecklist = (data: ChecklistRequest) =>
   apiFetch<Checklist>("/checklist", {
@@ -65,7 +81,7 @@ interface ChecklistItemRequest {
 }
 
 export const getChecklistItems = (checklistId: string) =>
-  apiFetch<ChecklistItem[]>(`/checklist/${checklistId}/item`);
+  apiFetch<ApiResponse<ChecklistItem[]>>(`/checklist/${checklistId}/item`);
 
 export const createChecklistItem = (
   checklistId: string,

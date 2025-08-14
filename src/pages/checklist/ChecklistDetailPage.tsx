@@ -6,6 +6,7 @@ import {
   createChecklistItem,
   deleteChecklistItem,
   updateItemStatus,
+  type ChecklistItem,
 } from "@/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,10 +17,21 @@ import { toast } from "sonner";
 export default function ChecklistDetailPage() {
   const { checklistId } = useParams();
 
-  const { data, error, mutate } = useSWR(`/checklist/${checklistId}/item`, () =>
-    getChecklistItems(checklistId!)
+  const { data, error, mutate } = useSWR(
+    `/checklist/${checklistId}/item`,
+    async () => {
+      const items = await getChecklistItems(checklistId!);
+      return (
+        items ?? {
+          statusCode: 500,
+          message: "No data",
+          errorMessage: null,
+          data: [],
+        }
+      );
+    }
   );
-  console.log("ChecklistDetailPage data:", data, "error:", error);
+
   const [newItemName, setNewItemName] = useState("");
 
   if (error) return <div>Gagal memuat item...</div>;
@@ -28,7 +40,6 @@ export default function ChecklistDetailPage() {
   const handleCreateItem = async () => {
     try {
       await createChecklistItem(checklistId!, { name: newItemName });
-      // [cite: 8]
       mutate();
       setNewItemName("");
       toast.success("Item berhasil ditambahkan!");
@@ -45,7 +56,6 @@ export default function ChecklistDetailPage() {
   const handleToggleStatus = async (itemId: string) => {
     try {
       await updateItemStatus(checklistId!, itemId);
-      // [cite: 9]
       mutate();
       toast.success("Status item berhasil diperbarui");
     } catch (err) {
@@ -61,7 +71,6 @@ export default function ChecklistDetailPage() {
   const handleDeleteItem = async (itemId: string) => {
     try {
       await deleteChecklistItem(checklistId!, itemId);
-      // [cite: 9]
       mutate();
       toast.success("Item berhasil dihapus");
     } catch (err) {
@@ -73,9 +82,6 @@ export default function ChecklistDetailPage() {
       );
     }
   };
-
-  // Fitur rename bisa ditambahkan dengan dialog seperti pada dashboard
-  // const handleRenameItem = async (itemId, newName) => { ... } [cite: 9]
 
   return (
     <div className="container mx-auto p-4">
@@ -96,26 +102,21 @@ export default function ChecklistDetailPage() {
       </div>
 
       <div className="space-y-2">
-        {data.data.map((item) => (
+        {data.data.map((item: ChecklistItem) => (
           <Card key={item.id}>
             <CardContent className="flex items-center justify-between p-4">
               <div className="flex items-center gap-4">
                 <Checkbox
-                  checked={item.itemCompletionStatus}
+                  checked={item.completed}
                   onCheckedChange={() => handleToggleStatus(item.id)}
                 />
                 <span
-                  className={
-                    item.itemCompletionStatus
-                      ? "line-through text-gray-500"
-                      : ""
-                  }
+                  className={item.completed ? "line-through text-gray-500" : ""}
                 >
                   {item.name}
                 </span>
               </div>
               <div>
-                {/* Tombol Rename bisa ditambahkan di sini */}
                 <Button
                   variant="destructive"
                   size="sm"

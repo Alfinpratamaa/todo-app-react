@@ -26,7 +26,7 @@ export default function LoginPage() {
     try {
       const response = await loginUser({ username, password });
       console.log("Login response:", response);
-      if (response && response.statusCode === 2110) {
+      if (response?.data?.token && response.statusCode === 2110) {
         login(response.data.token);
         toast.success(response.message || "Registrasi Berhasil");
         navigate("/");

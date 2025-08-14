@@ -1,5 +1,11 @@
 import useSWR from "swr";
-import { getChecklists, createChecklist, deleteChecklist } from "@/api";
+import {
+  getChecklists,
+  createChecklist,
+  deleteChecklist,
+  type Checklist,
+  type ApiResponse,
+} from "@/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +22,21 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { toast } from "sonner";
 
 export default function DashboardPage() {
-  const { data, error, mutate } = useSWR("/checklist", getChecklists);
+  const { data, error, mutate } = useSWR<ApiResponse<Checklist[]>>(
+    "/checklist",
+    async () => {
+      const res = await getChecklists();
+      return (
+        res ?? {
+          statusCode: 500,
+          message: "No data",
+          errorMessage: null,
+          data: [],
+        }
+      );
+    }
+  );
+
   console.log("DashboardPage data:", data, "error:", error);
   const [newChecklistName, setNewChecklistName] = useState("");
   const navigate = useNavigate();
@@ -88,7 +108,7 @@ export default function DashboardPage() {
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {data.data.map((checklist) => (
+        {data?.data.map((checklist: Checklist) => (
           <Card key={checklist.id}>
             <CardHeader className="flex justify-between items-center">
               <CardTitle>{checklist.name}</CardTitle>
