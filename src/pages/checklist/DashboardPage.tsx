@@ -2,7 +2,6 @@ import useSWR from "swr";
 import {
   getChecklists,
   createChecklist,
-  deleteChecklist,
   type Checklist,
   type ApiResponse,
 } from "@/api";
@@ -20,7 +19,6 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/useAuthStore";
 import { toast } from "sonner";
-import { Checkbox } from "@/components/ui/checkbox";
 
 export default function DashboardPage() {
   const { data, error, mutate } = useSWR<ApiResponse<Checklist[]>>(
@@ -55,21 +53,6 @@ export default function DashboardPage() {
         err instanceof Error
           ? err.message
           : "Gagal membuat checklist, silakan coba lagi"
-      );
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteChecklist(id);
-      mutate();
-      toast.success("Checklist berhasil dihapus!");
-    } catch (error) {
-      console.error(error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Gagal menghapus checklist, silakan coba lagi"
       );
     }
   };
