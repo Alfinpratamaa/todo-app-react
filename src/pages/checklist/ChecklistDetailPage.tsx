@@ -1,0 +1,133 @@
+import { useParams, Link } from "react-router-dom";
+import useSWR from "swr";
+import { useState } from "react";
+import {
+  getChecklistItems,
+  createChecklistItem,
+  deleteChecklistItem,
+  updateItemStatus,
+} from "@/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
+
+export default function ChecklistDetailPage() {
+  const { checklistId } = useParams();
+
+  const { data, error, mutate } = useSWR(`/checklist/${checklistId}/item`, () =>
+    getChecklistItems(checklistId!)
+  );
+  console.log("ChecklistDetailPage data:", data, "error:", error);
+  const [newItemName, setNewItemName] = useState("");
+
+  if (error) return <div>Gagal memuat item...</div>;
+  if (!data) return <div>Memuat...</div>;
+
+  const handleCreateItem = async () => {
+    try {
+      await createChecklistItem(checklistId!, { name: newItemName });
+      // [cite: 8]
+      mutate();
+      setNewItemName("");
+      toast.success("Item berhasil ditambahkan!");
+    } catch (err) {
+      console.error(err);
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Gagal menambahkan item, silakan coba lagi"
+      );
+    }
+  };
+
+  const handleToggleStatus = async (itemId: string) => {
+    try {
+      await updateItemStatus(checklistId!, itemId);
+      // [cite: 9]
+      mutate();
+      toast.success("Status item berhasil diperbarui");
+    } catch (err) {
+      console.error(err);
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Gagal memperbarui status item, silakan coba lagi"
+      );
+    }
+  };
+
+  const handleDeleteItem = async (itemId: string) => {
+    try {
+      await deleteChecklistItem(checklistId!, itemId);
+      // [cite: 9]
+      mutate();
+      toast.success("Item berhasil dihapus");
+    } catch (err) {
+      console.error(err);
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Gagal menghapus item, silakan coba lagi"
+      );
+    }
+  };
+
+  // Fitur rename bisa ditambahkan dengan dialog seperti pada dashboard
+  // const handleRenameItem = async (itemId, newName) => { ... } [cite: 9]
+
+  return (
+    <div className="container mx-auto p-4">
+      <Link to="/">
+        <Button variant="outline" className="mb-4">
+          Kembali ke Dashboard
+        </Button>
+      </Link>
+      <h1 className="text-2xl font-bold mb-4">Detail Checklist</h1>
+
+      <div className="flex gap-2 mb-4">
+        <Input
+          placeholder="Nama item baru..."
+          value={newItemName}
+          onChange={(e) => setNewItemName(e.target.value)}
+        />
+        <Button onClick={handleCreateItem}>Tambah Item</Button>
+      </div>
+
+      <div className="space-y-2">
+        {data.data.map((item) => (
+          <Card key={item.id}>
+            <CardContent className="flex items-center justify-between p-4">
+              <div className="flex items-center gap-4">
+                <Checkbox
+                  checked={item.itemCompletionStatus}
+                  onCheckedChange={() => handleToggleStatus(item.id)}
+                />
+                <span
+                  className={
+                    item.itemCompletionStatus
+                      ? "line-through text-gray-500"
+                      : ""
+                  }
+                >
+                  {item.name}
+                </span>
+              </div>
+              <div>
+                {/* Tombol Rename bisa ditambahkan di sini */}
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleDeleteItem(item.id)}
+                >
+                  Hapus
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
