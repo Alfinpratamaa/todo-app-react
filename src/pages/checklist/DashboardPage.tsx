@@ -20,6 +20,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/useAuthStore";
 import { toast } from "sonner";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function DashboardPage() {
   const { data, error, mutate } = useSWR<ApiResponse<Checklist[]>>(
@@ -125,17 +126,28 @@ export default function DashboardPage() {
                   : "Incomplete"}
               </span>
             </CardHeader>
+            <CardContent>
+              <p>Daftar Item:</p>
+              <ul className="list-disc ml-4">
+                {checklist.items?.map((item) => (
+                  <li
+                    key={item.id}
+                    className={
+                      item.itemCompletionStatus
+                        ? "line-through text-gray-500"
+                        : ""
+                    }
+                  >
+                    {item.name}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+
             <CardContent className="flex justify-between">
               <Link to={`/checklist/${checklist.id}`}>
                 <Button variant="outline">Lihat Detail</Button>
               </Link>
-
-              <Button
-                variant="destructive"
-                onClick={() => handleDelete(checklist.id)}
-              >
-                Hapus
-              </Button>
             </CardContent>
           </Card>
         ))}
