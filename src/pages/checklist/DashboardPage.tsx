@@ -1,27 +1,12 @@
 import useSWR from "swr";
-import {
-  getChecklists,
-  createChecklist,
-  type Checklist,
-  type ApiResponse,
-} from "@/api";
+import { getChecklists, type Checklist, type ApiResponse } from "@/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/useAuthStore";
-import { toast } from "sonner";
 
 export default function DashboardPage() {
-  const { data, error, mutate } = useSWR<ApiResponse<Checklist[]>>(
+  const { data, error } = useSWR<ApiResponse<Checklist[]>>(
     "/checklist",
     async () => {
       const res = await getChecklists();
@@ -36,27 +21,8 @@ export default function DashboardPage() {
     }
   );
 
-  const [newChecklistName, setNewChecklistName] = useState("");
-  const [dialogOpen, setDialogOpen] = useState(false);
   const navigate = useNavigate();
   const { logout } = useAuthStore();
-
-  const handleCreate = async () => {
-    try {
-      await createChecklist({ name: newChecklistName });
-      mutate();
-      toast.success("Checklist berhasil dibuat!");
-      setNewChecklistName("");
-      setDialogOpen(false);
-    } catch (err) {
-      console.error(err);
-      toast.error(
-        err instanceof Error
-          ? err.message
-          : "Gagal membuat checklist, silakan coba lagi"
-      );
-    }
-  };
 
   const handleLogout = () => {
     logout();
@@ -115,22 +81,9 @@ export default function DashboardPage() {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Dashboard Checklist</h1>
         <div>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>Buat Checklist Baru</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Buat Checklist Baru</DialogTitle>
-              </DialogHeader>
-              <Input
-                placeholder="Nama Checklist..."
-                value={newChecklistName}
-                onChange={(e) => setNewChecklistName(e.target.value)}
-              />
-              <Button onClick={handleCreate}>Simpan</Button>
-            </DialogContent>
-          </Dialog>
+          <Button onClick={() => navigate("/checklist/create")}>
+            Buat Checklist Baru
+          </Button>
           <Button variant="outline" onClick={handleLogout} className="ml-2">
             Logout
           </Button>
