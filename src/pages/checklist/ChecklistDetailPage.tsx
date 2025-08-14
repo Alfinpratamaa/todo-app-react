@@ -57,7 +57,7 @@ export default function ChecklistDetailPage() {
       await createChecklistItem(checklistId!, { itemName: newItemName });
       mutate();
       setNewItemName("");
-      setAddDialogOpen(false); // tutup dialog
+      setAddDialogOpen(false);
       toast.success("Item berhasil ditambahkan!");
     } catch (err) {
       console.error(err);
@@ -126,7 +126,6 @@ export default function ChecklistDetailPage() {
       </Link>
       <h1 className="text-2xl font-bold mb-4">Detail Checklist</h1>
 
-      {/* Tombol Tambah Item */}
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
         <DialogTrigger asChild>
           <Button className="mb-4">Tambah Item</Button>
@@ -146,7 +145,6 @@ export default function ChecklistDetailPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog Rename */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -163,7 +161,6 @@ export default function ChecklistDetailPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Daftar Item */}
       <div className="space-y-2">
         {data.data.map((item: ChecklistItem) => (
           <Card key={item.id}>
