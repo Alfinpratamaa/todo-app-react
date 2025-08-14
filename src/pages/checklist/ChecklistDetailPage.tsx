@@ -6,17 +6,24 @@ import {
   createChecklistItem,
   deleteChecklistItem,
   updateItemStatus,
+  renameItem,
   type ChecklistItem,
 } from "@/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 
 export default function ChecklistDetailPage() {
   const { checklistId } = useParams();
-
   const { data, error, mutate } = useSWR(
     `/checklist/${checklistId}/item`,
     async () => {
@@ -33,6 +40,10 @@ export default function ChecklistDetailPage() {
   );
 
   const [newItemName, setNewItemName] = useState("");
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<ChecklistItem | null>(null);
+  const [editingName, setEditingName] = useState("");
 
   if (error) return <div>Gagal memuat item...</div>;
   if (!data) return <div>Memuat...</div>;
@@ -43,13 +54,10 @@ export default function ChecklistDetailPage() {
       return;
     }
     try {
-      const res = await createChecklistItem(checklistId!, {
-        itemName: newItemName,
-      });
-      console.log("New item created:", res);
-
+      await createChecklistItem(checklistId!, { itemName: newItemName });
       mutate();
       setNewItemName("");
+      setAddDialogOpen(false); // tutup dialog
       toast.success("Item berhasil ditambahkan!");
     } catch (err) {
       console.error(err);
@@ -61,10 +69,27 @@ export default function ChecklistDetailPage() {
     }
   };
 
+  const handleRenameItem = async () => {
+    if (!editingName.trim() || !editingItem) return;
+
+    try {
+      await renameItem(checklistId!, editingItem.id, { itemName: editingName });
+      mutate();
+      setEditDialogOpen(false);
+      setEditingItem(null);
+      setEditingName("");
+      toast.success("Nama item berhasil diperbarui!");
+    } catch (err) {
+      console.error(err);
+      toast.error(
+        err instanceof Error ? err.message : "Gagal memperbarui nama item"
+      );
+    }
+  };
+
   const handleToggleStatus = async (itemId: string) => {
     try {
-      const resp = await updateItemStatus(checklistId!, itemId);
-      console.log("Item status updated:", resp);
+      await updateItemStatus(checklistId!, itemId);
       mutate();
       toast.success("Status item berhasil diperbarui");
     } catch (err) {
@@ -101,16 +126,44 @@ export default function ChecklistDetailPage() {
       </Link>
       <h1 className="text-2xl font-bold mb-4">Detail Checklist</h1>
 
-      <div className="flex gap-2 mb-4">
-        <Input
-          placeholder="Nama item baru..."
-          value={newItemName}
-          required
-          onChange={(e) => setNewItemName(e.target.value)}
-        />
-        <Button onClick={handleCreateItem}>Tambah Item</Button>
-      </div>
+      {/* Tombol Tambah Item */}
+      <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+        <DialogTrigger asChild>
+          <Button className="mb-4">Tambah Item</Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Tambah Item Baru</DialogTitle>
+          </DialogHeader>
+          <Input
+            placeholder="Nama item baru..."
+            value={newItemName}
+            onChange={(e) => setNewItemName(e.target.value)}
+          />
+          <Button className="mt-2" onClick={handleCreateItem}>
+            Simpan
+          </Button>
+        </DialogContent>
+      </Dialog>
 
+      {/* Dialog Rename */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Ubah Nama Item</DialogTitle>
+          </DialogHeader>
+          <Input
+            placeholder="Nama baru"
+            value={editingName}
+            onChange={(e) => setEditingName(e.target.value)}
+          />
+          <Button className="mt-2" onClick={handleRenameItem}>
+            Simpan
+          </Button>
+        </DialogContent>
+      </Dialog>
+
+      {/* Daftar Item */}
       <div className="space-y-2">
         {data.data.map((item: ChecklistItem) => (
           <Card key={item.id}>
@@ -130,7 +183,17 @@ export default function ChecklistDetailPage() {
                   {item.name}
                 </span>
               </div>
-              <div>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setEditingItem(item);
+                    setEditingName(item.name);
+                    setEditDialogOpen(true);
+                  }}
+                >
+                  Ubah Nama
+                </Button>
                 <Button
                   variant="destructive"
                   size="sm"

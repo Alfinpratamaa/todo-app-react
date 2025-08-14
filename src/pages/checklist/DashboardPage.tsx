@@ -37,6 +37,7 @@ export default function DashboardPage() {
   );
 
   const [newChecklistName, setNewChecklistName] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
   const navigate = useNavigate();
   const { logout } = useAuthStore();
 
@@ -46,6 +47,7 @@ export default function DashboardPage() {
       mutate();
       toast.success("Checklist berhasil dibuat!");
       setNewChecklistName("");
+      setDialogOpen(false);
     } catch (err) {
       console.error(err);
       toast.error(
@@ -113,7 +115,7 @@ export default function DashboardPage() {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Dashboard Checklist</h1>
         <div>
-          <Dialog>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button>Buat Checklist Baru</Button>
             </DialogTrigger>
