@@ -129,6 +129,7 @@ export default function DashboardPage() {
               <Link to={`/checklist/${checklist.id}`}>
                 <Button variant="outline">Lihat Detail</Button>
               </Link>
+
               <Button
                 variant="destructive"
                 onClick={() => handleDelete(checklist.id)}

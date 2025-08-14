@@ -38,6 +38,10 @@ export default function ChecklistDetailPage() {
   if (!data) return <div>Memuat...</div>;
 
   const handleCreateItem = async () => {
+    if (!newItemName.trim()) {
+      toast.error("Nama item tidak boleh kosong");
+      return;
+    }
     try {
       const res = await createChecklistItem(checklistId!, {
         itemName: newItemName,
@@ -59,7 +63,8 @@ export default function ChecklistDetailPage() {
 
   const handleToggleStatus = async (itemId: string) => {
     try {
-      await updateItemStatus(checklistId!, itemId);
+      const resp = await updateItemStatus(checklistId!, itemId);
+      console.log("Item status updated:", resp);
       mutate();
       toast.success("Status item berhasil diperbarui");
     } catch (err) {
@@ -100,6 +105,7 @@ export default function ChecklistDetailPage() {
         <Input
           placeholder="Nama item baru..."
           value={newItemName}
+          required
           onChange={(e) => setNewItemName(e.target.value)}
         />
         <Button onClick={handleCreateItem}>Tambah Item</Button>
@@ -111,11 +117,15 @@ export default function ChecklistDetailPage() {
             <CardContent className="flex items-center justify-between p-4">
               <div className="flex items-center gap-4">
                 <Checkbox
-                  checked={item.completed}
+                  checked={item.itemCompletionStatus}
                   onCheckedChange={() => handleToggleStatus(item.id)}
                 />
                 <span
-                  className={item.completed ? "line-through text-gray-500" : ""}
+                  className={
+                    item.itemCompletionStatus
+                      ? "line-through text-gray-500"
+                      : ""
+                  }
                 >
                   {item.name}
                 </span>
